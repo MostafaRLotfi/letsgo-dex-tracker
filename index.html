@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Let's Go Dex Tracker</title>
+<meta name="description" content="Route-ordered Pokédex checklist and Master Trainer tracker for Pokémon: Let's Go, Pikachu! and Let's Go, Eevee!">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f3ee; --surface:#ffffff; --surface-2:#faf8f5; --ink:#1d1f23; --muted:#6b6f78; --line:#e7e2da;
+  --red:#d6332b; --red-ink:#ffffff; --red-soft:#fbe9e7; --blue:#2f5d8a; --gold:#b27b0e; --brown:#8a5a2b;
+  --ok:#2e8b57; --ok-soft:#e5f3eb; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171b; --surface:#1e2127; --surface-2:#23272e; --ink:#eceef1; --muted:#9aa0aa; --line:#30353d;
+    --red:#e5483f; --red-soft:#3a1f1e; --blue:#8bb6e0; --gold:#e0b04a; --brown:#d39a63;
+    --ok:#5cc28a; --ok-soft:#1c3328; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171b; --surface:#1e2127; --surface-2:#23272e; --ink:#eceef1; --muted:#9aa0aa; --line:#30353d;
+  --red:#e5483f; --red-soft:#3a1f1e; --blue:#8bb6e0; --gold:#e0b04a; --brown:#d39a63;
+  --ok:#5cc28a; --ok-soft:#1c3328; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,-apple-system,sans-serif;padding-bottom:120px}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+
+/* header */
+header.hero{background:var(--red);color:#fff;position:relative;overflow:hidden}
+header.hero .wrap{padding-top:28px;padding-bottom:24px;position:relative}
+.ball{position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;border:26px solid rgba(255,255,255,.12)}
+.ball::after{content:"";position:absolute;left:-26px;right:-26px;top:calc(50% - 13px);height:26px;background:rgba(255,255,255,.12)}
+.ball::before{content:"";position:absolute;width:60px;height:60px;border-radius:50%;left:calc(50% - 30px);top:calc(50% - 30px);border:16px solid rgba(255,255,255,.12);background:var(--red);z-index:1}
+.hero h1,.hero .sub,.stats{position:relative;z-index:2}
+h1{margin:0;font-size:clamp(24px,4vw,34px);font-weight:800;letter-spacing:-.02em}
+.sub{margin:6px 0 0;opacity:.9;max-width:640px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:20px}
+.stat{background:rgba(255,255,255,.14);border-radius:14px;padding:12px 14px}
+.stat .k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;opacity:.85;font-weight:600}
+.stat .v{font-size:24px;font-weight:800;margin-top:2px}
+.stat .v small{font-size:14px;font-weight:600;opacity:.8}
+.bar{height:6px;background:rgba(255,255,255,.25);border-radius:6px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:#fff;border-radius:6px;width:0;transition:width .3s}
+
+/* toolbar */
+.toolbar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.toolbar .wrap{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-top:10px;padding-bottom:10px}
+.tabs{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tabs button{border:0;background:none;padding:7px 14px;border-radius:999px;font-weight:600;cursor:pointer;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--red);color:#fff}
+.search{flex:1;min-width:160px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px}
+.ctl{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;cursor:pointer}
+label.tog{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);cursor:pointer;white-space:nowrap}
+
+/* stops */
+main{padding-top:18px}
+.intro{color:var(--muted);font-size:14px;margin:0 0 14px}
+.stop{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.stop>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px}
+.stop>summary::-webkit-details-marker{display:none}
+.num{flex:none;width:32px;height:32px;border-radius:50%;background:var(--red-soft);color:var(--red);font-weight:800;display:grid;place-items:center;font-size:14px}
+.stop.done .num{background:var(--ok-soft);color:var(--ok)}
+.stop h2{margin:0;font-size:17px;font-weight:700;flex:1}
+.stop .count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chev{transition:transform .2s;color:var(--muted)}
+.stop[open] .chev{transform:rotate(90deg)}
+.tip{margin:0;padding:0 16px 10px 60px;color:var(--muted);font-size:13.5px}
+.rows{border-top:1px solid var(--line)}
+.head,.row{display:grid;grid-template-columns:36px 52px minmax(130px,1.1fr) minmax(150px,1.3fr) minmax(170px,1.5fr);gap:10px;align-items:center;padding:8px 16px}
+.head{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;background:var(--surface-2)}
+.row{border-top:1px solid var(--line);cursor:pointer}
+.row:hover{background:var(--surface-2)}
+.row.caught .nm{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}
+.row.offver{opacity:.55}
+.dex{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--muted)}
+.nm{font-weight:600}
+.how{font-size:13.5px;color:var(--muted)}
+.evo{font-size:13px;color:var(--blue)}
+.evo .arr{color:var(--muted);margin:0 4px}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:1px;white-space:nowrap}
+.tag.P{background:color-mix(in srgb,var(--gold) 16%,transparent);color:var(--gold)}
+.tag.E{background:color-mix(in srgb,var(--brown) 16%,transparent);color:var(--brown)}
+.tag.T{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+
+/* custom checkbox */
+.cb{appearance:none;-webkit-appearance:none;width:22px;height:22px;border:2px solid color-mix(in srgb,var(--muted) 60%,transparent);border-radius:50%;display:grid;place-items:center;cursor:pointer;margin:0;background:var(--surface);transition:all .15s;position:relative;overflow:hidden}
+.cb::before{content:"";position:absolute;inset:0;background:linear-gradient(var(--red) 0 46%,transparent 46% 54%,#fff 54%);opacity:0;transition:opacity .15s}
+.cb::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff;border:2px solid #222;opacity:0;z-index:1;transition:opacity .15s}
+.cb:checked{border-color:#222}
+.cb:checked::before,.cb:checked::after{opacity:1}
+.cb:focus-visible{outline:3px solid color-mix(in srgb,var(--red) 40%,transparent);outline-offset:2px}
+
+/* masters */
+.gm{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px 18px;margin-bottom:16px}
+.gm h2{margin:0 0 6px;font-size:18px}
+.gm p{margin:4px 0;color:var(--muted);font-size:14px}
+.gm ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+.gm .badge{display:inline-flex;align-items:center;gap:8px;margin-top:10px;padding:6px 12px;border-radius:999px;font-weight:700;font-size:14px;background:var(--red-soft);color:var(--red)}
+.gm .badge.won{background:var(--ok-soft);color:var(--ok)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.loc-h{grid-column:1/-1;margin:14px 0 2px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.mcard{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer}
+.mcard:hover{border-color:color-mix(in srgb,var(--red) 40%,var(--line))}
+.mcard.done{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.mcard .cb{margin-top:1px;flex:none}
+.mcard .t{font-weight:600}
+.mcard .s{font-size:12.5px;color:var(--muted)}
+.mcard .w{font-size:12px;color:var(--muted);font-style:italic}
+.pill{font-size:10.5px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:6px;background:color-mix(in srgb,var(--blue) 15%,transparent);color:var(--blue);white-space:nowrap}
+.pill.opt{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+
+/* save bar */
+.savebar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(0,0,0,.08)}
+.savebar .wrap{display:flex;gap:10px;align-items:center;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+.savebar .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+.code{flex:1;min-width:200px;font-family:"JetBrains Mono",monospace;font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;white-space:nowrap;overflow-x:auto;user-select:all}
+.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;background:var(--red);color:#fff}
+.btn.ghost{background:var(--surface-2);color:var(--ink);border:1px solid var(--line)}
+.loadrow{display:none;width:100%;gap:8px}
+.loadrow.show{display:flex}
+.loadrow input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:9px 12px;font-family:"JetBrains Mono",monospace;font-size:13px}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:10px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:all .2s;z-index:20}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+footer.src{color:var(--muted);font-size:12.5px;padding:10px 0 30px}
+footer.src a{color:inherit}
+[hidden]{display:none!important}
+
+@media (max-width:760px){
+  .stats{grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:10px}.stat .v{font-size:19px}.stat .k{font-size:10px}.stat .v small{font-size:12px}
+  .ball{opacity:.6}
+  .head{display:none}
+  .row{grid-template-columns:30px 1fr;grid-template-areas:"cb main";gap:4px 10px;padding:10px 14px}
+  .row .cbw{grid-area:cb;align-self:start;padding-top:2px}
+  .row .dex{display:none}
+  .row .main{grid-area:main}
+  .row .how,.row .evo{display:block;margin-top:2px}
+  .tip{padding-left:16px}
+  .savebar .lbl{display:none}
+}
+@media (min-width:761px){ .row .main{display:contents} }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="ball" aria-hidden="true"></div>
+    <h1>Let's Go Dex Tracker</h1>
+    <p class="sub">An efficient, story-ordered route to fill the Pokédex in Let's Go, Pikachu! / Eevee!, plus a Master Trainer tracker for the Grand Master title.</p>
+    <div class="stats">
+      <div class="stat"><div class="k">Pokédex</div><div class="v" id="sDex">0 <small>/ 153</small></div><div class="bar"><i id="bDex"></i></div></div>
+      <div class="stat"><div class="k">Master Trainers</div><div class="v" id="sMas">0 <small>/ 150</small></div><div class="bar"><i id="bMas"></i></div></div>
+      <div class="stat"><div class="k">Route stops cleared</div><div class="v" id="sStop">0 <small>/ 22</small></div><div class="bar"><i id="bStop"></i></div></div>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="dex">Pokédex route</button>
+      <button role="tab" aria-selected="false" data-tab="mas">Grand Master</button>
+    </div>
+    <input class="search" id="q" type="search" placeholder="Search Pokémon or location…" aria-label="Search">
+    <select class="ctl" id="ver" aria-label="Game version">
+      <option value="0">Both versions</option>
+      <option value="1">Let's Go Pikachu</option>
+      <option value="2">Let's Go Eevee</option>
+    </select>
+    <label class="tog"><input type="checkbox" id="hide"> Hide done</label>
+    <button class="ctl" style="font-size:17px;line-height:1" id="theme" title="Toggle theme" aria-label="Toggle theme">◐</button>
+  </div>
+</div>
+
+<main class="wrap">
+  <section id="tab-dex">
+    <p class="intro">Follow the stops in order. Each Pokémon is listed at the earliest point you can get it. Tap a row to check it off. <b>Evolves into</b> shows later stages and levels, so for a living dex catch one of the base form per stage.</p>
+    <div id="stops"></div>
+  </section>
+
+  <section id="tab-mas" hidden>
+    <div class="gm">
+      <h2>Grand Master title</h2>
+      <p>Earn the Master title for every one of the first 150 Pokémon, then talk to the woman in the Game Freak office (Celadon Condominiums, 3F) to receive <b>Grand Master</b>.</p>
+      <ul>
+        <li>Master Trainers appear across Kanto only <b>after you become Champion</b>. None are inside Gyms.</li>
+        <li>Rules: you may use only one Pokémon of the trainer's species, in the lead slot, with no items. Alolan forms and Mega Evolution are allowed for you.</li>
+        <li>Ditto, the legendary birds and Mewtwo don't battle. Show them a Pokémon of that species with enough CP instead.</li>
+        <li>Mew, Meltan and Melmetal titles are optional for Grand Master (some guides list all 153; Bulbapedia says 150).</li>
+      </ul>
+      <div class="badge" id="gmBadge">0 / 150 required titles</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin:0 0 12px;flex-wrap:wrap">
+      <label class="tog">Sort by
+        <select class="ctl" id="msort"><option value="dex">Dex number</option><option value="loc">Location</option></select>
+      </label>
+    </div>
+    <div class="mgrid" id="mgrid"></div>
+  </section>
+
+  <footer class="src">
+    Locations cross-checked from <a href="https://www.thonky.com/pokemon-lets-go/list-of-pokemon-locations">Thonky</a> and <a href="https://daily.pokecommunity.com/2018/11/16/pokemon-lets-go-pikachu-and-eevee-dex-locations-and-more/">PokéCommunity Daily</a>. Master Trainer data from <a href="https://bulbapedia.bulbagarden.net/wiki/Master_Trainer">Bulbapedia</a>, <a href="https://www.supercheats.com/lets-go-pikachu/walkthrough/where-are-all-the-master-trainers">SuperCheats</a> and <a href="https://gamerguides.com/pokemon-lets-go-pikachu-and-lets-go-eevee/guide/postgame/master-trainers">GamerGuides</a>. Fan-made tracker, not affiliated with Nintendo, Game Freak or The Pokémon Company.
+  </footer>
+</main>
+
+<div class="savebar">
+  <div class="wrap">
+    <span class="lbl">Save code</span>
+    <div class="code" id="code" title="Copy this into your notes app"></div>
+    <button class="btn" id="copy">Copy</button>
+    <button class="btn ghost" id="loadBtn">Load</button>
+    <div class="loadrow" id="loadRow">
+      <input id="loadIn" placeholder="Paste a saved code (LGPE1-…)" aria-label="Saved code">
+      <button class="btn" id="loadGo">Restore</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STOPS = [{"title": "1. Route 1 & Route 2", "tip": "Start of the game. Grab these while you head to Viridian.", "mons": [{"n": 16, "name": "Pidgey", "tag": "", "how": "Wild", "evo": "Pidgeotto (Lv 18)  →  Pidgeot (Lv 36)"}, {"n": 19, "name": "Rattata", "tag": "", "how": "Wild", "evo": "Raticate (Lv 20)"}, {"n": 10, "name": "Caterpie", "tag": "", "how": "Wild", "evo": "Metapod (Lv 7)  →  Butterfree (Lv 10)"}, {"n": 13, "name": "Weedle", "tag": "", "how": "Wild", "evo": "Kakuna (Lv 7)  →  Beedrill (Lv 10)"}, {"n": 43, "name": "Oddish", "tag": "P", "how": "Wild", "evo": "Gloom (Lv 21)  →  Vileplume (Leaf Stone)"}, {"n": 69, "name": "Bellsprout", "tag": "E", "how": "Wild", "evo": "Weepinbell (Lv 21)  →  Victreebel (Leaf Stone)"}]}, {"title": "2. Route 22", "tip": "West of Viridian. Land spawns only for now (water comes later).", "mons": [{"n": 21, "name": "Spearow", "tag": "", "how": "Wild", "evo": "Fearow (Lv 20)"}, {"n": 29, "name": "Nidoran♀", "tag": "", "how": "Wild", "evo": "Nidorina (Lv 16)  →  Nidoqueen (Moon Stone)"}, {"n": 32, "name": "Nidoran♂", "tag": "", "how": "Wild", "evo": "Nidorino (Lv 16)  →  Nidoking (Moon Stone)"}, {"n": 30, "name": "Nidorina", "tag": "", "how": "Evolve Nidoran♀ (Lv 16)", "evo": "Nidoqueen (Moon Stone)"}, {"n": 33, "name": "Nidorino", "tag": "", "how": "Evolve Nidoran♂ (Lv 16)", "evo": "Nidoking (Moon Stone)"}]}, {"title": "3. Viridian Forest", "tip": "Bulbasaur is rare; build a catch combo to boost rare spawns.", "mons": [{"n": 1, "name": "Bulbasaur", "tag": "", "how": "Wild (rare); or Cerulean gift at 30 caught", "evo": "Ivysaur (Lv 16)  →  Venusaur (Lv 32)"}, {"n": 11, "name": "Metapod", "tag": "", "how": "Wild", "evo": "Butterfree (Lv 10)"}, {"n": 14, "name": "Kakuna", "tag": "", "how": "Wild", "evo": "Beedrill (Lv 10)"}, {"n": 15, "name": "Beedrill", "tag": "", "how": "Evolve Kakuna (Lv 10); rare wild in Eevee ver.", "evo": ""}, {"n": 25, "name": "Pikachu", "tag": "", "how": "Wild", "evo": "Raichu (Thunder Stone)"}, {"n": 12, "name": "Butterfree", "tag": "", "how": "Evolve Metapod (Lv 10); rare wild in Pikachu ver.", "evo": ""}]}, {"title": "4. Pewter City, Route 3 & Route 4", "tip": "Buy the Magikarp from the salesman at the Route 4 Pokémon Center. Pick up the Old Amber in the Pewter Museum for later.", "mons": [{"n": 4, "name": "Charmander", "tag": "", "how": "Wild (rare); or Route 24 gift at 50 caught", "evo": "Charmeleon (Lv 16)  →  Charizard (Lv 36)"}, {"n": 23, "name": "Ekans", "tag": "E", "how": "Wild", "evo": "Arbok (Lv 22)"}, {"n": 27, "name": "Sandshrew", "tag": "P", "how": "Wild", "evo": "Sandslash (Lv 22)"}, {"n": 56, "name": "Mankey", "tag": "P", "how": "Wild", "evo": "Primeape (Lv 28)"}, {"n": 24, "name": "Arbok", "tag": "E", "how": "Evolve Ekans (Lv 22)", "evo": ""}, {"n": 28, "name": "Sandslash", "tag": "P", "how": "Evolve Sandshrew (Lv 22)", "evo": ""}, {"n": 57, "name": "Primeape", "tag": "P", "how": "Evolve Mankey (Lv 28)", "evo": ""}, {"n": 2, "name": "Ivysaur", "tag": "", "how": "Evolve Bulbasaur (Lv 16)", "evo": "Venusaur (Lv 32)"}, {"n": 5, "name": "Charmeleon", "tag": "", "how": "Evolve Charmander (Lv 16)", "evo": "Charizard (Lv 36)"}, {"n": 17, "name": "Pidgeotto", "tag": "", "how": "Evolve Pidgey (Lv 18)", "evo": "Pidgeot (Lv 36)"}, {"n": 20, "name": "Raticate", "tag": "", "how": "Evolve Rattata (Lv 20)", "evo": ""}, {"n": 22, "name": "Fearow", "tag": "", "how": "Evolve Spearow (Lv 20)", "evo": ""}, {"n": 54, "name": "Psyduck", "tag": "", "how": "Wild (Route 4, on land)", "evo": "Golduck (Lv 33)"}, {"n": 129, "name": "Magikarp", "tag": "", "how": "Buy from salesman (Route 4 Pokémon Center)", "evo": "Gyarados (Lv 20)"}, {"n": 130, "name": "Gyarados", "tag": "", "how": "Evolve Magikarp (Lv 20)", "evo": ""}]}, {"title": "5. Mt. Moon", "tip": "Collect Moon Stones. You can only take ONE fossil (Helix or Dome); the other needs a trade.", "mons": [{"n": 41, "name": "Zubat", "tag": "", "how": "Wild", "evo": "Golbat (Lv 22)"}, {"n": 35, "name": "Clefairy", "tag": "", "how": "Wild", "evo": "Clefable (Moon Stone)"}, {"n": 36, "name": "Clefable", "tag": "", "how": "Wild, or Moon Stone on Clefairy", "evo": ""}, {"n": 46, "name": "Paras", "tag": "", "how": "Wild", "evo": "Parasect (Lv 24)"}, {"n": 74, "name": "Geodude", "tag": "", "how": "Wild", "evo": "Graveler (Lv 25)  →  Golem (Trade)"}, {"n": 95, "name": "Onix", "tag": "", "how": "Wild", "evo": ""}, {"n": 111, "name": "Rhyhorn", "tag": "", "how": "Wild (Mt. Moon per Thonky; else Rock Tunnel)", "evo": "Rhydon (Lv 42)"}, {"n": 113, "name": "Chansey", "tag": "", "how": "Wild (rare, many areas)", "evo": ""}, {"n": 42, "name": "Golbat", "tag": "", "how": "Evolve Zubat (Lv 22)", "evo": ""}, {"n": 47, "name": "Parasect", "tag": "", "how": "Evolve Paras (Lv 24)", "evo": ""}, {"n": 75, "name": "Graveler", "tag": "", "how": "Evolve Geodude (Lv 25)", "evo": "Golem (Trade)"}, {"n": 31, "name": "Nidoqueen", "tag": "", "how": "Moon Stone on Nidorina", "evo": ""}, {"n": 34, "name": "Nidoking", "tag": "", "how": "Moon Stone on Nidorino", "evo": ""}]}, {"title": "6. Cerulean City, Route 24 & Route 25", "tip": "Nugget Bridge and Bill's house. Land spawns now; water later.", "mons": [{"n": 7, "name": "Squirtle", "tag": "", "how": "Wild (rare); or Vermilion gift at 60 species", "evo": "Wartortle (Lv 16)  →  Blastoise (Lv 36)"}, {"n": 48, "name": "Venonat", "tag": "", "how": "Wild", "evo": "Venomoth (Lv 31)"}, {"n": 52, "name": "Meowth", "tag": "E", "how": "Wild", "evo": "Persian (Lv 28)"}, {"n": 58, "name": "Growlithe", "tag": "P", "how": "Wild (Thonky: Rt 24-25; PokeCommunity: Rt 5-8)", "evo": "Arcanine (Fire Stone)"}, {"n": 8, "name": "Wartortle", "tag": "", "how": "Evolve Squirtle (Lv 16)", "evo": "Blastoise (Lv 36)"}, {"n": 55, "name": "Golduck", "tag": "", "how": "Evolve Psyduck (Lv 33)", "evo": ""}, {"n": 53, "name": "Persian", "tag": "", "how": "Eevee ver: evolve Meowth (Lv 28). Pikachu ver: Vermilion trade", "evo": ""}]}, {"title": "7. Route 5 & Route 6", "tip": "On the way south to Vermilion. Save a Moon Stone for Jigglypuff.", "mons": [{"n": 37, "name": "Vulpix", "tag": "E", "how": "Wild", "evo": "Ninetales (Fire Stone)"}, {"n": 39, "name": "Jigglypuff", "tag": "", "how": "Wild", "evo": "Wigglytuff (Moon Stone)"}, {"n": 63, "name": "Abra", "tag": "", "how": "Wild", "evo": "Kadabra (Lv 16)  →  Alakazam (Trade)"}, {"n": 64, "name": "Kadabra", "tag": "", "how": "Evolve Abra (Lv 16)", "evo": "Alakazam (Trade)"}, {"n": 40, "name": "Wigglytuff", "tag": "", "how": "Moon Stone on Jigglypuff", "evo": ""}]}, {"title": "8. Vermilion, Route 11 & Diglett's Cave", "tip": "", "mons": [{"n": 96, "name": "Drowzee", "tag": "", "how": "Wild", "evo": "Hypno (Lv 26)"}, {"n": 122, "name": "Mr. Mime", "tag": "", "how": "Wild", "evo": ""}, {"n": 97, "name": "Hypno", "tag": "", "how": "Evolve Drowzee (Lv 26)", "evo": ""}, {"n": 50, "name": "Diglett", "tag": "", "how": "Wild", "evo": "Dugtrio (Lv 26)"}, {"n": 51, "name": "Dugtrio", "tag": "", "how": "Wild or evolve Diglett (Lv 26)", "evo": ""}]}, {"title": "9. Routes 9-10 & Rock Tunnel", "tip": "Level-based starter evolutions can happen any time; check them off whenever they hit the level.", "mons": [{"n": 66, "name": "Machop", "tag": "", "how": "Wild", "evo": "Machoke (Lv 28)  →  Machamp (Trade)"}, {"n": 98, "name": "Krabby", "tag": "", "how": "Wild (Route 10, on land)", "evo": "Kingler (Lv 28)"}, {"n": 104, "name": "Cubone", "tag": "", "how": "Wild", "evo": "Marowak (Lv 28)"}, {"n": 115, "name": "Kangaskhan", "tag": "", "how": "Wild", "evo": ""}, {"n": 67, "name": "Machoke", "tag": "", "how": "Evolve Machop (Lv 28)", "evo": "Machamp (Trade)"}, {"n": 105, "name": "Marowak", "tag": "", "how": "Evolve Cubone (Lv 28)", "evo": ""}, {"n": 3, "name": "Venusaur", "tag": "", "how": "Evolve Ivysaur (Lv 32)", "evo": ""}, {"n": 6, "name": "Charizard", "tag": "", "how": "Evolve Charmeleon (Lv 36)", "evo": ""}, {"n": 9, "name": "Blastoise", "tag": "", "how": "Evolve Wartortle (Lv 36)", "evo": ""}]}, {"title": "10. Route 7, Route 8 & Celadon City", "tip": "Buy evolution stones at the Celadon Dept. Store. Your partner Pikachu/Eevee can't evolve; use a wild-caught one.", "mons": [{"n": 38, "name": "Ninetales", "tag": "E", "how": "Wild, or Fire Stone on Vulpix", "evo": ""}, {"n": 137, "name": "Porygon", "tag": "", "how": "Wild on Route 7 (rare), or Silph Co. gift later", "evo": ""}, {"n": 26, "name": "Raichu", "tag": "", "how": "Thunder Stone on a non-partner Pikachu", "evo": ""}, {"n": 59, "name": "Arcanine", "tag": "", "how": "Pikachu ver: wild/Fire Stone. Eevee ver: Vermilion trade", "evo": ""}]}, {"title": "11. Pokémon Tower (Lavender Town)", "tip": "Needs the Silph Scope from the Celadon Rocket Hideout.", "mons": [{"n": 92, "name": "Gastly", "tag": "", "how": "Wild", "evo": "Haunter (Lv 25)  →  Gengar (Trade)"}, {"n": 93, "name": "Haunter", "tag": "", "how": "Wild", "evo": "Gengar (Trade)"}]}, {"title": "12. Routes 12-15 (after the Poké Flute)", "tip": "Wake the Snorlax on Route 12. Catch-combo for Scyther/Pinsir.", "mons": [{"n": 143, "name": "Snorlax", "tag": "", "how": "Poké Flute encounter (Route 12 or 16)", "evo": ""}, {"n": 83, "name": "Farfetch'd", "tag": "", "how": "Wild (rare)", "evo": ""}, {"n": 99, "name": "Kingler", "tag": "", "how": "Wild (Routes 12-13)", "evo": ""}, {"n": 44, "name": "Gloom", "tag": "P", "how": "Wild or evolve Oddish (Lv 21)", "evo": "Vileplume (Leaf Stone)"}, {"n": 70, "name": "Weepinbell", "tag": "E", "how": "Wild or evolve Bellsprout (Lv 21)", "evo": "Victreebel (Leaf Stone)"}, {"n": 49, "name": "Venomoth", "tag": "", "how": "Wild or evolve Venonat (Lv 31)", "evo": ""}, {"n": 123, "name": "Scyther", "tag": "P", "how": "Wild", "evo": ""}, {"n": 127, "name": "Pinsir", "tag": "E", "how": "Wild", "evo": ""}, {"n": 128, "name": "Tauros", "tag": "", "how": "Wild", "evo": ""}, {"n": 18, "name": "Pidgeot", "tag": "", "how": "Wild (Routes 12-18) or evolve Pidgeotto (Lv 36)", "evo": ""}]}, {"title": "13. Routes 16-18 (Cycling Road)", "tip": "Eevee is on Route 17. Catch 4 for a living dex (Eevee + 3 evolutions).", "mons": [{"n": 84, "name": "Doduo", "tag": "", "how": "Wild", "evo": "Dodrio (Lv 31)"}, {"n": 85, "name": "Dodrio", "tag": "", "how": "Wild", "evo": ""}, {"n": 77, "name": "Ponyta", "tag": "", "how": "Wild", "evo": "Rapidash (Lv 40)"}, {"n": 78, "name": "Rapidash", "tag": "", "how": "Wild", "evo": ""}, {"n": 133, "name": "Eevee", "tag": "", "how": "Wild (Route 17)", "evo": "Vaporeon / Jolteon / Flareon (Water / Thunder / Fire Stone)"}, {"n": 134, "name": "Vaporeon", "tag": "", "how": "Water Stone on Eevee", "evo": ""}, {"n": 135, "name": "Jolteon", "tag": "", "how": "Thunder Stone on Eevee", "evo": ""}, {"n": 136, "name": "Flareon", "tag": "", "how": "Fire Stone on Eevee", "evo": ""}]}, {"title": "14. Saffron City", "tip": "Dojo: pick one; the other is a rare Victory Road spawn. Silph Co. gives Lapras (and Porygon).", "mons": [{"n": 106, "name": "Hitmonlee", "tag": "", "how": "Dojo gift or Victory Road (rare)", "evo": ""}, {"n": 107, "name": "Hitmonchan", "tag": "", "how": "Dojo gift or Victory Road (rare)", "evo": ""}, {"n": 131, "name": "Lapras", "tag": "", "how": "Gift at Silph Co.", "evo": ""}]}, {"title": "15. Sea Skim water sweep", "tip": "Once you have Sea Skim, surf Routes 4, 6, 10-13, 18-25.", "mons": [{"n": 60, "name": "Poliwag", "tag": "", "how": "Water (Routes 22, 23, 25)", "evo": "Poliwhirl (Lv 25)  →  Poliwrath (Water Stone)"}, {"n": 61, "name": "Poliwhirl", "tag": "", "how": "Water, or evolve Poliwag (Lv 25)", "evo": "Poliwrath (Water Stone)"}, {"n": 62, "name": "Poliwrath", "tag": "", "how": "Water Stone on Poliwhirl", "evo": ""}, {"n": 72, "name": "Tentacool", "tag": "", "how": "Water (many routes)", "evo": "Tentacruel (Lv 30)"}, {"n": 73, "name": "Tentacruel", "tag": "", "how": "Water", "evo": ""}, {"n": 116, "name": "Horsea", "tag": "", "how": "Water (Routes 11-13)", "evo": "Seadra (Lv 32)"}, {"n": 117, "name": "Seadra", "tag": "", "how": "Water (Routes 11-13)", "evo": ""}, {"n": 118, "name": "Goldeen", "tag": "", "how": "Water (Route 6)", "evo": "Seaking (Lv 33)"}, {"n": 119, "name": "Seaking", "tag": "", "how": "Water (Route 6)", "evo": ""}, {"n": 120, "name": "Staryu", "tag": "", "how": "Water (Routes 18, 19, 21)", "evo": "Starmie (Water Stone)"}, {"n": 121, "name": "Starmie", "tag": "", "how": "Water (Routes 18, 19, 21)", "evo": ""}, {"n": 147, "name": "Dratini", "tag": "", "how": "Water (Route 10)", "evo": "Dragonair (Lv 30)  →  Dragonite (Lv 55)"}, {"n": 148, "name": "Dragonair", "tag": "", "how": "Water (Route 10)", "evo": "Dragonite (Lv 55)"}, {"n": 149, "name": "Dragonite", "tag": "", "how": "Evolve Dragonair (Lv 55)", "evo": ""}]}, {"title": "16. Seafoam Islands", "tip": "Legendaries and Snorlax: win a timed battle first, then catch.", "mons": [{"n": 79, "name": "Slowpoke", "tag": "", "how": "Wild", "evo": "Slowbro (Lv 37)"}, {"n": 80, "name": "Slowbro", "tag": "", "how": "Wild", "evo": ""}, {"n": 86, "name": "Seel", "tag": "", "how": "Wild", "evo": "Dewgong (Lv 34)"}, {"n": 87, "name": "Dewgong", "tag": "", "how": "Wild", "evo": ""}, {"n": 90, "name": "Shellder", "tag": "", "how": "Wild", "evo": "Cloyster (Water Stone)"}, {"n": 91, "name": "Cloyster", "tag": "", "how": "Wild", "evo": ""}, {"n": 124, "name": "Jynx", "tag": "", "how": "Wild", "evo": ""}, {"n": 144, "name": "Articuno", "tag": "", "how": "Legendary encounter", "evo": ""}]}, {"title": "17. Cinnabar Island", "tip": "Revive fossils at the Pokémon Lab; explore the Pokémon Mansion.", "mons": [{"n": 132, "name": "Ditto", "tag": "", "how": "Wild (Pokémon Mansion)", "evo": ""}, {"n": 126, "name": "Magmar", "tag": "", "how": "Wild (Pokémon Mansion)", "evo": ""}, {"n": 138, "name": "Omanyte", "tag": "", "how": "Revive Helix Fossil", "evo": "Omastar (Lv 40)"}, {"n": 139, "name": "Omastar", "tag": "", "how": "Evolve Omanyte (Lv 40)", "evo": ""}, {"n": 140, "name": "Kabuto", "tag": "", "how": "Revive Dome Fossil", "evo": "Kabutops (Lv 40)"}, {"n": 141, "name": "Kabutops", "tag": "", "how": "Evolve Kabuto (Lv 40)", "evo": ""}, {"n": 142, "name": "Aerodactyl", "tag": "", "how": "Revive Old Amber", "evo": ""}]}, {"title": "18. Route 21", "tip": "Water route between Pallet Town and Cinnabar.", "mons": [{"n": 114, "name": "Tangela", "tag": "", "how": "Wild", "evo": ""}, {"n": 45, "name": "Vileplume", "tag": "P", "how": "Wild, or Leaf Stone on Gloom", "evo": ""}, {"n": 71, "name": "Victreebel", "tag": "E", "how": "Wild, or Leaf Stone on Weepinbell", "evo": ""}]}, {"title": "19. Power Plant (surf Route 10)", "tip": "Grimer/Muk and Koffing/Weezing also spawn in the Pokémon Mansion.", "mons": [{"n": 81, "name": "Magnemite", "tag": "", "how": "Wild", "evo": "Magneton (Lv 30)"}, {"n": 82, "name": "Magneton", "tag": "", "how": "Wild", "evo": ""}, {"n": 100, "name": "Voltorb", "tag": "", "how": "Wild", "evo": "Electrode (Lv 30)"}, {"n": 101, "name": "Electrode", "tag": "", "how": "Wild", "evo": ""}, {"n": 125, "name": "Electabuzz", "tag": "", "how": "Wild", "evo": ""}, {"n": 88, "name": "Grimer", "tag": "P", "how": "Wild", "evo": "Muk (Lv 38)"}, {"n": 89, "name": "Muk", "tag": "P", "how": "Wild", "evo": ""}, {"n": 109, "name": "Koffing", "tag": "E", "how": "Wild", "evo": "Weezing (Lv 35)"}, {"n": 110, "name": "Weezing", "tag": "E", "how": "Wild", "evo": ""}, {"n": 145, "name": "Zapdos", "tag": "", "how": "Legendary encounter", "evo": ""}]}, {"title": "20. Route 23 & Victory Road", "tip": "Final stretch before the Elite Four.", "mons": [{"n": 102, "name": "Exeggcute", "tag": "", "how": "Wild (Route 23)", "evo": "Exeggutor (Leaf Stone)"}, {"n": 103, "name": "Exeggutor", "tag": "", "how": "Wild (Route 23)", "evo": ""}, {"n": 112, "name": "Rhydon", "tag": "", "how": "Wild, or evolve Rhyhorn (Lv 42)", "evo": ""}, {"n": 146, "name": "Moltres", "tag": "", "how": "Legendary encounter", "evo": ""}]}, {"title": "21. Post-game: Cerulean Cave", "tip": "Opens after you beat the Elite Four.", "mons": [{"n": 108, "name": "Lickitung", "tag": "", "how": "Wild", "evo": ""}, {"n": 150, "name": "Mewtwo", "tag": "", "how": "Legendary encounter", "evo": ""}]}, {"title": "22. Trades & specials", "tip": "Needs a second player, a second Switch, or Pokémon GO.", "mons": [{"n": 65, "name": "Alakazam", "tag": "", "how": "Trade Kadabra", "evo": ""}, {"n": 68, "name": "Machamp", "tag": "", "how": "Trade Machoke", "evo": ""}, {"n": 76, "name": "Golem", "tag": "", "how": "Trade Graveler", "evo": ""}, {"n": 94, "name": "Gengar", "tag": "", "how": "Trade Haunter", "evo": ""}, {"n": 151, "name": "Mew", "tag": "", "how": "Poké Ball Plus", "evo": ""}, {"n": 808, "name": "Meltan", "tag": "", "how": "Pokémon GO transfer (GO Park)", "evo": "Melmetal (400 Candy in GO)"}, {"n": 809, "name": "Melmetal", "tag": "", "how": "Evolve Meltan in Pokémon GO, then transfer", "evo": ""}]}];
+const MASTERS = [{"n": 1, "loc": "Route 4 East"}, {"n": 2, "loc": "Route 14"}, {"n": 3, "loc": "Route 23"}, {"n": 4, "loc": "Celadon Condominiums"}, {"n": 5, "loc": "Route 10"}, {"n": 6, "loc": "Route 23"}, {"n": 7, "loc": "Route 12"}, {"n": 8, "loc": "Route 20"}, {"n": 9, "loc": "Route 20"}, {"n": 10, "loc": "Route 18"}, {"n": 11, "loc": "Route 11"}, {"n": 12, "loc": "Route 2 North"}, {"n": 13, "loc": "Viridian Forest"}, {"n": 14, "loc": "Route 13"}, {"n": 15, "loc": "Route 8"}, {"n": 16, "loc": "Route 2 South"}, {"n": 17, "loc": "Route 16"}, {"n": 18, "loc": "Route 12"}, {"n": 19, "loc": "Route 10"}, {"n": 20, "loc": "Cerulean City"}, {"n": 21, "loc": "Pewter City"}, {"n": 22, "loc": "Route 18"}, {"n": 23, "loc": "Route 4 East"}, {"n": 24, "loc": "Rocket Hideout"}, {"n": 25, "loc": "Viridian Forest"}, {"n": 26, "loc": "Pokémon Tower"}, {"n": 27, "loc": "Route 11"}, {"n": 28, "loc": "Route 7"}, {"n": 29, "loc": "Route 3"}, {"n": 30, "loc": "Underground Path 7-8"}, {"n": 31, "loc": "Route 23"}, {"n": 32, "loc": "Route 4 West"}, {"n": 33, "loc": "Underground Path 7-8"}, {"n": 34, "loc": "Route 23"}, {"n": 35, "loc": "Saffron City"}, {"n": 36, "loc": "Mt. Moon"}, {"n": 37, "loc": "Route 6"}, {"n": 38, "loc": "Route 9"}, {"n": 39, "loc": "Pewter City"}, {"n": 40, "loc": "Silph Co."}, {"n": 41, "loc": "Rock Tunnel"}, {"n": 42, "loc": "Victory Road"}, {"n": 43, "loc": "Viridian City"}, {"n": 44, "loc": "Pewter City"}, {"n": 45, "loc": "Route 14"}, {"n": 46, "loc": "Mt. Moon"}, {"n": 47, "loc": "Route 2 North"}, {"n": 48, "loc": "Route 24"}, {"n": 49, "loc": "Route 15"}, {"n": 50, "loc": "Diglett's Cave"}, {"n": 51, "loc": "Diglett's Cave"}, {"n": 52, "loc": "Viridian City"}, {"n": 53, "loc": "Rocket Hideout"}, {"n": 54, "loc": "Route 21"}, {"n": 55, "loc": "Route 4 East"}, {"n": 56, "loc": "Route 5"}, {"n": 57, "loc": "Route 11"}, {"n": 58, "loc": "Route 7"}, {"n": 59, "loc": "Celadon City"}, {"n": 60, "loc": "Route 12"}, {"n": 61, "loc": "Cerulean City"}, {"n": 62, "loc": "Cerulean City"}, {"n": 63, "loc": "Viridian City"}, {"n": 64, "loc": "Saffron City"}, {"n": 65, "loc": "Route 10"}, {"n": 66, "loc": "Silph Co."}, {"n": 67, "loc": "Fuchsia City"}, {"n": 68, "loc": "Vermilion City"}, {"n": 69, "loc": "Viridian City"}, {"n": 70, "loc": "Pokémon Tower"}, {"n": 71, "loc": "Celadon City"}, {"n": 72, "loc": "Route 20"}, {"n": 73, "loc": "Route 20"}, {"n": 74, "loc": "Rock Tunnel"}, {"n": 75, "loc": "Victory Road"}, {"n": 76, "loc": "Pewter City"}, {"n": 77, "loc": "Saffron City"}, {"n": 78, "loc": "Saffron City"}, {"n": 79, "loc": "Route 21"}, {"n": 80, "loc": "Route 21"}, {"n": 81, "loc": "Underground Path 5-6"}, {"n": 82, "loc": "Underground Path 5-6"}, {"n": 83, "loc": "Vermilion City"}, {"n": 84, "loc": "Cerulean City"}, {"n": 85, "loc": "Route 15"}, {"n": 86, "loc": "Seafoam Islands"}, {"n": 87, "loc": "Seafoam Islands"}, {"n": 88, "loc": "Celadon City"}, {"n": 89, "loc": "Pokémon Mansion"}, {"n": 90, "loc": "Route 19"}, {"n": 91, "loc": "Route 20"}, {"n": 92, "loc": "Lavender Town"}, {"n": 93, "loc": "Lavender Town"}, {"n": 94, "loc": "Lavender Town"}, {"n": 95, "loc": "Underground Path 7-8"}, {"n": 96, "loc": "Viridian City"}, {"n": 97, "loc": "Pokémon Tower"}, {"n": 98, "loc": "Vermilion City"}, {"n": 99, "loc": "Silph Co."}, {"n": 100, "loc": "Power Plant"}, {"n": 101, "loc": "Route 16"}, {"n": 102, "loc": "Route 24"}, {"n": 103, "loc": "Cinnabar Island"}, {"n": 104, "loc": "Route 8"}, {"n": 105, "loc": "Lavender Town"}, {"n": 106, "loc": "Saffron City"}, {"n": 107, "loc": "Saffron City"}, {"n": 108, "loc": "Route 16"}, {"n": 109, "loc": "Route 17"}, {"n": 110, "loc": "Rocket Hideout"}, {"n": 111, "loc": "Route 17"}, {"n": 112, "loc": "Rocket Hideout"}, {"n": 113, "loc": "Fuchsia City"}, {"n": 114, "loc": "Route 15"}, {"n": 115, "loc": "Fuchsia City"}, {"n": 116, "loc": "Route 19"}, {"n": 117, "loc": "Route 12"}, {"n": 118, "loc": "Route 12"}, {"n": 119, "loc": "Route 13"}, {"n": 120, "loc": "Route 19"}, {"n": 121, "loc": "Route 25"}, {"n": 122, "loc": "Celadon City"}, {"n": 123, "loc": "Route 15"}, {"n": 124, "loc": "Cerulean City"}, {"n": 125, "loc": "Route 10"}, {"n": 126, "loc": "Pokémon Mansion"}, {"n": 127, "loc": "Route 18"}, {"n": 128, "loc": "Fuchsia City"}, {"n": 129, "loc": "Route 4 West"}, {"n": 130, "loc": "Celadon City"}, {"n": 131, "loc": "Pokémon Tower"}, {"n": 132, "loc": "Pokémon Mansion", "cp": 4000}, {"n": 133, "loc": "Route 17"}, {"n": 134, "loc": "Celadon City"}, {"n": 135, "loc": "Celadon City"}, {"n": 136, "loc": "Celadon City"}, {"n": 137, "loc": "Celadon City"}, {"n": 138, "loc": "Mt. Moon"}, {"n": 139, "loc": "Cinnabar Island"}, {"n": 140, "loc": "Mt. Moon"}, {"n": 141, "loc": "Pewter City"}, {"n": 142, "loc": "Pewter City"}, {"n": 143, "loc": "Celadon City"}, {"n": 144, "loc": "Seafoam Islands", "cp": 7500}, {"n": 145, "loc": "Power Plant", "cp": 7500}, {"n": 146, "loc": "Victory Road", "cp": 7500}, {"n": 147, "loc": "Route 23"}, {"n": 148, "loc": "Seafoam Islands"}, {"n": 149, "loc": "Cerulean City"}, {"n": 150, "loc": "Pokémon Mansion", "cp": 9000}, {"n": 151, "loc": "Pokémon Mansion", "cp": 8000, "opt": 1}, {"n": 808, "loc": "Pokémon Mansion", "cp": 4000, "opt": 1}, {"n": 809, "loc": "Pokémon Mansion", "cp": 8000, "opt": 1}];
+const ORDER = [...Array(151)].map((_,i)=>i+1).concat([808,809]); // bit order
+const IDX = new Map(ORDER.map((n,i)=>[n,i]));
+const NAME = {}; STOPS.forEach(s=>s.mons.forEach(m=>NAME[m.n]=m.name));
+const TAGT = {P:"Pikachu only",E:"Eevee only"};
+
+const state = {dex:new Set(), mas:new Set(), ver:0};
+const $ = s=>document.querySelector(s);
+
+/* ---------- encode / decode ---------- */
+function encode(){
+  const bytes = new Uint8Array(1+20+20);
+  bytes[0] = state.ver;
+  state.dex.forEach(n=>{const i=IDX.get(n); bytes[1+(i>>3)] |= 1<<(i&7)});
+  state.mas.forEach(n=>{const i=IDX.get(n); bytes[21+(i>>3)] |= 1<<(i&7)});
+  let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return "LGPE1-"+btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function decode(str){
+  str=(str||"").trim().replace(/^#/,"");
+  if(!str.startsWith("LGPE1-")) throw new Error("bad prefix");
+  let b=str.slice(6).replace(/-/g,"+").replace(/_/g,"/"); while(b.length%4) b+="=";
+  const bin=atob(b); if(bin.length!==41) throw new Error("bad length");
+  const dex=new Set(), mas=new Set();
+  ORDER.forEach((n,i)=>{
+    if(bin.charCodeAt(1+(i>>3)) & (1<<(i&7))) dex.add(n);
+    if(bin.charCodeAt(21+(i>>3)) & (1<<(i&7))) mas.add(n);
+  });
+  return {ver:Math.min(2,bin.charCodeAt(0)), dex, mas};
+}
+
+/* ---------- render: route ---------- */
+function evoHTML(e){
+  if(!e) return "";
+  return e.split("  →  ").map(x=>x.replace(/\(([^)]*)\)/,'<span style="color:var(--muted)">($1)</span>')).join('<span class="arr">→</span>');
+}
+function tagHTML(t){
+  if(!t) return "";
+  if(state.ver && ((t==="P"&&state.ver===2)||(t==="E"&&state.ver===1))) return `<span class="tag T">Trade from ${t==="P"?"Pikachu":"Eevee"}</span>`;
+  return `<span class="tag ${t}">${TAGT[t]}</span>`;
+}
+function renderStops(){
+  const open = new Set([...document.querySelectorAll(".stop[open]")].map(d=>d.dataset.i));
+  const first = !document.querySelector(".stop");
+  $("#stops").innerHTML = STOPS.map((s,i)=>{
+    const m=s.title.match(/^(\d+)\.\s*(.*)$/);
+    return `<details class="stop" data-i="${i}" ${first||open.has(String(i))?"open":""}>
+      <summary><span class="num">${m[1]}</span><h2>${esc(m[2])}</h2><span class="count"></span><span class="chev">›</span></summary>
+      ${s.tip?`<p class="tip">${esc(s.tip)}</p>`:""}
+      <div class="rows">
+        <div class="head"><span></span><span>Dex</span><span>Pokémon</span><span>How to get</span><span>Evolves into</span></div>
+        ${s.mons.map(p=>`<div class="row" data-n="${p.n}" data-q="${esc((p.name+" "+p.how+" "+s.title).toLowerCase())}">
+          <span class="cbw"><input type="checkbox" class="cb" data-dex="${p.n}" aria-label="${esc(p.name)}"></span>
+          <span class="dex">#${String(p.n).padStart(3,"0")}</span>
+          <span class="main"><span class="nm">${esc(p.name)}${tagHTML(p.tag)}</span>
+          <span class="how">${esc(p.how)}</span>
+          <span class="evo">${evoHTML(esc(p.evo))}</span></span>
+        </div>`).join("")}
+      </div></details>`;
+  }).join("");
+}
+
+/* ---------- render: masters ---------- */
+function renderMasters(){
+  const sort=$("#msort").value;
+  const list=[...MASTERS].sort((a,b)=> sort==="loc" ? a.loc.localeCompare(b.loc)||IDX.get(a.n)-IDX.get(b.n) : IDX.get(a.n)-IDX.get(b.n));
+  let html="", lastLoc=null;
+  list.forEach(m=>{
+    if(sort==="loc" && m.loc!==lastLoc){ html+=`<div class="loc-h">${esc(m.loc)}</div>`; lastLoc=m.loc; }
+    const nm=NAME[m.n];
+    html+=`<label class="mcard" data-m="${m.n}" data-q="${esc((nm+" "+m.loc).toLowerCase())}">
+      <input type="checkbox" class="cb" data-mas="${m.n}">
+      <span><span class="t">${esc(nm)}</span>${m.cp?`<span class="pill">Show ${m.cp.toLocaleString()} CP</span>`:""}${m.opt?`<span class="pill opt">Optional</span>`:""}
+      <div class="s">#${String(m.n).padStart(3,"0")} · ${esc(m.loc)}</div>
+      <div class="w" data-warn="${m.n}">Catch one first</div></span>
+    </label>`;
+  });
+  $("#mgrid").innerHTML=html;
+}
+
+/* ---------- sync UI with state ---------- */
+function sync(){
+  document.querySelectorAll("[data-dex]").forEach(cb=>{const on=state.dex.has(+cb.dataset.dex); cb.checked=on; cb.closest(".row").classList.toggle("caught",on)});
+  document.querySelectorAll("[data-mas]").forEach(cb=>{const on=state.mas.has(+cb.dataset.mas); cb.checked=on; cb.closest(".mcard").classList.toggle("done",on)});
+  document.querySelectorAll("[data-warn]").forEach(w=>w.hidden=state.dex.has(+w.dataset.warn)||state.mas.has(+w.dataset.warn));
+  // off-version dim
+  document.querySelectorAll(".row").forEach(r=>{
+    const p=findMon(+r.dataset.n);
+    r.classList.toggle("offver", !!(state.ver && p.tag && ((p.tag==="P"&&state.ver===2)||(p.tag==="E"&&state.ver===1))));
+  });
+  let stopsDone=0;
+  document.querySelectorAll(".stop").forEach(d=>{
+    const s=STOPS[+d.dataset.i], got=s.mons.filter(m=>state.dex.has(m.n)).length;
+    d.querySelector(".count").textContent=`${got} / ${s.mons.length}`;
+    const done=got===s.mons.length; d.classList.toggle("done",done); if(done) stopsDone++;
+  });
+  const req=[...state.mas].filter(n=>n<=150).length;
+  $("#sDex").innerHTML=`${state.dex.size} <small>/ 153</small>`; $("#bDex").style.width=state.dex.size/153*100+"%";
+  $("#sMas").innerHTML=`${req} <small>/ 150${state.mas.size>req?` · +${state.mas.size-req} optional`:""}</small>`; $("#bMas").style.width=req/150*100+"%";
+  $("#sStop").innerHTML=`${stopsDone} <small>/ ${STOPS.length}</small>`; $("#bStop").style.width=stopsDone/STOPS.length*100+"%";
+  const b=$("#gmBadge"); b.classList.toggle("won",req===150);
+  b.textContent = req===150 ? "★ All 150 earned. Go claim Grand Master in Celadon!" : `${req} / 150 required titles`;
+  $("#ver").value=String(state.ver);
+  applyFilter();
+  const code=encode(); $("#code").textContent=code;
+  try{ history.replaceState(null,"","#"+code); }catch(e){}
+  try{ localStorage.setItem("lgpe-code",code); }catch(e){}
+}
+const MONS={}; STOPS.forEach(s=>s.mons.forEach(m=>MONS[m.n]=m));
+const findMon=n=>MONS[n];
+
+function applyFilter(){
+  const q=$("#q").value.trim().toLowerCase(), hide=$("#hide").checked;
+  document.querySelectorAll(".row").forEach(r=>{
+    r.hidden=(q&&!r.dataset.q.includes(q))||(hide&&state.dex.has(+r.dataset.n));
+  });
+  document.querySelectorAll(".stop").forEach(d=>{
+    const any=[...d.querySelectorAll(".row")].some(r=>!r.hidden);
+    d.hidden=!any; if(q&&any) d.open=true;
+  });
+  document.querySelectorAll(".mcard").forEach(c=>{
+    c.hidden=(q&&!c.dataset.q.includes(q))||(hide&&state.mas.has(+c.dataset.m));
+  });
+  document.querySelectorAll(".loc-h").forEach(h=>{
+    let el=h.nextElementSibling, any=false;
+    while(el&&!el.classList.contains("loc-h")){ if(!el.hidden) any=true; el=el.nextElementSibling; }
+    h.hidden=!any;
+  });
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{
+  const row=e.target.closest(".row");
+  if(row && !e.target.matches(".cb")){ const n=+row.dataset.n; state.dex.has(n)?state.dex.delete(n):state.dex.add(n); sync(); }
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.dex){ const n=+t.dataset.dex; t.checked?state.dex.add(n):state.dex.delete(n); sync(); }
+  if(t.dataset.mas){ const n=+t.dataset.mas; t.checked?state.mas.add(n):state.mas.delete(n); sync(); }
+});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  $("#tab-dex").hidden=b.dataset.tab!=="dex"; $("#tab-mas").hidden=b.dataset.tab!=="mas";
+  try{localStorage.setItem("lgpe-tab",b.dataset.tab)}catch(e){}
+});
+$("#q").oninput=applyFilter; $("#hide").onchange=applyFilter;
+$("#ver").onchange=e=>{state.ver=+e.target.value; renderStops(); sync();};
+$("#msort").onchange=()=>{renderMasters(); sync();};
+$("#copy").onclick=async()=>{
+  const code=encode();
+  try{ await navigator.clipboard.writeText(code); toast("Code copied. Paste it into your notes."); }
+  catch(e){ const r=document.createRange(); r.selectNodeContents($("#code")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Press Copy (⌘C / Ctrl+C)."); }
+};
+$("#loadBtn").onclick=()=>{ $("#loadRow").classList.toggle("show"); $("#loadIn").focus(); };
+$("#loadGo").onclick=()=>{
+  try{ const d=decode($("#loadIn").value); Object.assign(state,d); renderStops(); sync(); $("#loadIn").value=""; $("#loadRow").classList.remove("show"); toast(`Restored: ${d.dex.size} Pokédex, ${d.mas.size} Master titles`); }
+  catch(e){ toast("That code doesn't look right. Check you copied all of it."); }
+};
+$("#loadIn").onkeydown=e=>{ if(e.key==="Enter") $("#loadGo").click(); };
+$("#theme").onclick=()=>{
+  const cur=document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  const nxt=cur==="dark"?"light":"dark"; document.documentElement.dataset.theme=nxt;
+  try{localStorage.setItem("lgpe-theme",nxt)}catch(e){}
+};
+let tt; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),2200); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------- boot ---------- */
+(function(){
+  try{ const th=localStorage.getItem("lgpe-theme"); if(th) document.documentElement.dataset.theme=th; }catch(e){}
+  let src=location.hash.slice(1);
+  if(!src){ try{ src=localStorage.getItem("lgpe-code")||""; }catch(e){} }
+  if(src){ try{ Object.assign(state,decode(src)); }catch(e){} }
+  renderStops(); renderMasters(); sync();
+  try{ if(localStorage.getItem("lgpe-tab")==="mas") document.querySelector('[data-tab="mas"]').click(); }catch(e){}
+})();
+</script>
+</body>
+</html>
