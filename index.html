@@ -106,6 +106,9 @@ main{padding-top:18px}
 .gm .badge.won{background:var(--ok-soft);color:var(--ok)}
 .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
 .loc-h{grid-column:1/-1;margin:14px 0 2px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.sec-h{grid-column:1/-1;margin:18px 0 0;padding-bottom:6px;border-bottom:1px solid var(--line);font-size:16px;font-weight:700}
+.sec-h:first-child{margin-top:0}
+.sec-p{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:2px}
 .mcard{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer}
 .mcard:hover{border-color:color-mix(in srgb,var(--red) 40%,var(--line))}
 .mcard.done{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
@@ -291,8 +294,14 @@ function renderStops(){
 function renderMasters(){
   const sort=$("#msort").value;
   const list=[...MASTERS].sort((a,b)=> sort==="loc" ? a.loc.localeCompare(b.loc)||IDX.get(a.n)-IDX.get(b.n) : IDX.get(a.n)-IDX.get(b.n));
+  const battle=list.filter(m=>!m.cp), show=list.filter(m=>m.cp);
   let html="", lastLoc=null;
-  list.forEach(m=>{
+  [battle,show].forEach((group,gi)=>{
+  html+= gi===0
+    ? `<div class="sec-h">Battle the Master Trainer</div>`
+    : `<div class="sec-h">No battle: show a high-CP Pokémon<span class="sec-p">Bring one of that species with at least the CP shown.</span></div>`;
+  lastLoc=null;
+  group.forEach(m=>{
     if(sort==="loc" && m.loc!==lastLoc){ html+=`<div class="loc-h">${esc(m.loc)}</div>`; lastLoc=m.loc; }
     const nm=NAME[m.n];
     html+=`<label class="mcard" data-m="${m.n}" data-q="${esc((nm+" "+m.loc).toLowerCase())}">
@@ -301,6 +310,7 @@ function renderMasters(){
       <div class="s">#${String(m.n).padStart(3,"0")} · ${esc(m.loc)}</div>
       <div class="w" data-warn="${m.n}">Catch one first</div></span>
     </label>`;
+  });
   });
   $("#mgrid").innerHTML=html;
 }
@@ -348,9 +358,10 @@ function applyFilter(){
   document.querySelectorAll(".mcard").forEach(c=>{
     c.hidden=(q&&!c.dataset.q.includes(q))||(hide&&state.mas.has(+c.dataset.m));
   });
-  document.querySelectorAll(".loc-h").forEach(h=>{
+  document.querySelectorAll(".loc-h,.sec-h").forEach(h=>{
+    const stop=h.classList.contains("sec-h")?".sec-h":".loc-h,.sec-h";
     let el=h.nextElementSibling, any=false;
-    while(el&&!el.classList.contains("loc-h")){ if(!el.hidden) any=true; el=el.nextElementSibling; }
+    while(el&&!el.matches(stop)){ if(el.matches(".mcard")&&!el.hidden) any=true; el=el.nextElementSibling; }
     h.hidden=!any;
   });
 }
