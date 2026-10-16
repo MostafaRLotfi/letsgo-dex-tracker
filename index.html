@@ -105,6 +105,7 @@ main{padding-top:18px}
 .gm .badge{display:inline-flex;align-items:center;gap:8px;margin-top:10px;padding:6px 12px;border-radius:999px;font-weight:700;font-size:14px;background:var(--red-soft);color:var(--red)}
 .gm .badge.won{background:var(--ok-soft);color:var(--ok)}
 .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.loc-left{text-transform:none;letter-spacing:0;font-weight:600}
 .loc-h{grid-column:1/-1;margin:14px 0 2px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .sec-h{grid-column:1/-1;margin:18px 0 0;padding-bottom:6px;border-bottom:1px solid var(--line);font-size:16px;font-weight:700}
 .sec-h:first-child{margin-top:0}
@@ -185,6 +186,11 @@ footer.src a{color:inherit}
 <main class="wrap">
   <section id="tab-dex">
     <p class="intro" data-i18n-html="intro">Follow the stops in order. Each Pokémon is listed at the earliest point you can get it. Tap a row to check it off. <b>Evolves into</b> shows later stages and levels, so for a living dex catch one of the base form per stage.</p>
+    <div style="display:flex;gap:10px;align-items:center;margin:0 0 12px;flex-wrap:wrap">
+      <label class="tog"><span data-i18n="viewBy">View</span>
+        <select class="ctl" id="dview"><option value="route" data-i18n="viewRoute">Route order</option><option value="num" data-i18n="viewNum">Dex number</option></select>
+      </label>
+    </div>
     <div id="stops"></div>
   </section>
 
@@ -248,7 +254,8 @@ en:{ lv:"Lv {n}", ui:{
   secBattle:"Battle the Master Trainer", secShow:"No battle: show a high-CP Pokémon", secShowP:"Bring one of that species with at least the CP shown.",
   pillShow:"Show {cp} CP", opt:"Optional", warn:"Catch one first", statOpt:" · +{n} optional",
   tCopied:"Code copied. Paste it into your notes.", tSel:"Selected. Press Copy (⌘C / Ctrl+C).",
-  tRest:"Restored: {d} Pokédex, {m} Master titles", tBad:"That code doesn't look right. Check you copied all of it."}},
+  tRest:"Restored: {d} Pokédex, {m} Master titles", tBad:"That code doesn't look right. Check you copied all of it.",
+  stopN:"Stop {n}", locLeft:" · {n} left", locDone:" · ✓ all done"}},
 
 ja:{ cjk:1, lv:"Lv.{n}", route:ROUTE("番道路","",1), sep:"・", dash:"～",
  dir:{North:"（北）",South:"（南）",East:"（東）",West:"（西）"},
@@ -275,7 +282,8 @@ ja:{ cjk:1, lv:"Lv.{n}", route:ROUTE("番道路","",1), sep:"・", dash:"～",
   pillShow:"CP {cp} 以上を見せる",opt:"任意",warn:"先に1匹捕まえよう",statOpt:" · 任意 +{n}",
   footer:"出現場所は {thonky} と {pc} で照合。マスタートレーナーのデータは {bulba}、{sc}、{gg} より。ファンが作った非公式ツールで、任天堂・ゲームフリーク・株式会社ポケモンとは関係ありません。",
   save:"セーブコード",codeT:"メモアプリにコピーしておきましょう",copy:"コピー",load:"読み込む",loadPh:"保存したコードを貼り付け（LGPE1-…）",loadA:"保存したコード",restore:"復元",
-  tCopied:"コードをコピーしました。メモに貼り付けてください。",tSel:"選択しました。⌘C / Ctrl+C でコピーしてください。",tRest:"復元しました: 図鑑 {d}、マスター称号 {m}",tBad:"コードが正しくないようです。すべてコピーできているか確認してください。"},
+  tCopied:"コードをコピーしました。メモに貼り付けてください。",tSel:"選択しました。⌘C / Ctrl+C でコピーしてください。",tRest:"復元しました: 図鑑 {d}、マスター称号 {m}",tBad:"コードが正しくないようです。すべてコピーできているか確認してください。",
+  viewBy:"表示",viewRoute:"ルート順",viewNum:"図鑑番号順",stopN:"地点{n}",locLeft:" · 残り{n}",locDone:" · ✓ 完了"},
  stops:[
   ["{@Route 1}・{@Route 2}","ゲーム開始直後。{@Viridian City}へ向かう途中で捕まえましょう。"],
   ["{@Route 22}","{@Viridian City}の西。今は陸上の出現のみ（水上は後で）。"],
@@ -345,7 +353,8 @@ fr:{ lv:"N.{n}", route:ROUTE("Route ","Routes "), dir:{North:" (nord)",South:" (
   pillShow:"Montrer {cp} PC",opt:"Facultatif",warn:"Attrapez-en un d'abord",statOpt:" · +{n} facultatif(s)",
   footer:"Lieux vérifiés avec {thonky} et {pc}. Données des Maîtres Dresseurs : {bulba}, {sc} et {gg}. Outil créé par un fan, sans lien avec Nintendo, Game Freak ou The Pokémon Company.",
   save:"Code de sauvegarde",codeT:"Copiez-le dans votre app de notes",copy:"Copier",load:"Charger",loadPh:"Collez un code sauvegardé (LGPE1-…)",loadA:"Code sauvegardé",restore:"Restaurer",
-  tCopied:"Code copié. Collez-le dans vos notes.",tSel:"Sélectionné. Copiez avec ⌘C / Ctrl+C.",tRest:"Restauré : {d} Pokédex, {m} titres de Maître",tBad:"Ce code semble incorrect. Vérifiez que vous l'avez copié en entier."},
+  tCopied:"Code copié. Collez-le dans vos notes.",tSel:"Sélectionné. Copiez avec ⌘C / Ctrl+C.",tRest:"Restauré : {d} Pokédex, {m} titres de Maître",tBad:"Ce code semble incorrect. Vérifiez que vous l'avez copié en entier.",
+  viewBy:"Affichage",viewRoute:"Ordre de l'itinéraire",viewNum:"Numéro du Pokédex",stopN:"Étape {n}",locLeft:" · {n} restant(s)",locDone:" · ✓ terminé"},
  stops:[
   ["{@Route 1} et {@Route 2}","Début du jeu. Attrapez-les en route vers {@Viridian City}."],
   ["{@Route 22}","À l'ouest de {@Viridian City}. Seulement les apparitions sur terre pour l'instant (l'eau viendra plus tard)."],
@@ -415,7 +424,8 @@ de:{ lv:"Lv. {n}", route:ROUTE("Route ","Routen "), dir:{North:" (Nord)",South:"
   pillShow:"{cp} WP zeigen",opt:"Optional",warn:"Erst eins fangen",statOpt:" · +{n} optional",
   footer:"Fundorte abgeglichen mit {thonky} und {pc}. Meistertrainer-Daten von {bulba}, {sc} und {gg}. Fan-Projekt, nicht verbunden mit Nintendo, Game Freak oder The Pokémon Company.",
   save:"Speichercode",codeT:"Kopiere ihn in deine Notizen-App",copy:"Kopieren",load:"Laden",loadPh:"Gespeicherten Code einfügen (LGPE1-…)",loadA:"Gespeicherter Code",restore:"Wiederherstellen",
-  tCopied:"Code kopiert. Füge ihn in deine Notizen ein.",tSel:"Markiert. Kopieren mit ⌘C / Strg+C.",tRest:"Wiederhergestellt: {d} Pokédex, {m} Meistertitel",tBad:"Dieser Code scheint falsch zu sein. Prüfe, ob du ihn vollständig kopiert hast."},
+  tCopied:"Code kopiert. Füge ihn in deine Notizen ein.",tSel:"Markiert. Kopieren mit ⌘C / Strg+C.",tRest:"Wiederhergestellt: {d} Pokédex, {m} Meistertitel",tBad:"Dieser Code scheint falsch zu sein. Prüfe, ob du ihn vollständig kopiert hast.",
+  viewBy:"Ansicht",viewRoute:"Routen-Reihenfolge",viewNum:"Pokédex-Nummer",stopN:"Etappe {n}",locLeft:" · noch {n}",locDone:" · ✓ erledigt"},
  stops:[
   ["{@Route 1} & {@Route 2}","Spielbeginn. Fang sie auf dem Weg nach {@Viridian City}."],
   ["{@Route 22}","Westlich von {@Viridian City}. Vorerst nur Pokémon an Land (Wasser kommt später)."],
@@ -486,7 +496,8 @@ ko:{ lv:"Lv.{n}", route:ROUTE("번도로","",1), dash:"~", dir:{North:" (북쪽)
   pillShow:"CP {cp} 이상 보여 주기",opt:"선택",warn:"먼저 한 마리 잡기",statOpt:" · 선택 +{n}",
   footer:"출현 장소는 {thonky}, {pc}에서 대조했습니다. 마스터 트레이너 데이터 출처: {bulba}, {sc}, {gg}. 팬이 만든 비공식 도구로 닌텐도, 게임프리크, 포켓몬 컴퍼니와 관계없습니다.",
   save:"세이브 코드",codeT:"메모 앱에 복사해 두세요",copy:"복사",load:"불러오기",loadPh:"저장한 코드 붙여넣기 (LGPE1-…)",loadA:"저장한 코드",restore:"복원",
-  tCopied:"코드를 복사했습니다. 메모에 붙여 넣으세요.",tSel:"선택했습니다. ⌘C / Ctrl+C로 복사하세요.",tRest:"복원 완료: 도감 {d}, 마스터 칭호 {m}",tBad:"코드가 올바르지 않은 것 같습니다. 전부 복사했는지 확인하세요."},
+  tCopied:"코드를 복사했습니다. 메모에 붙여 넣으세요.",tSel:"선택했습니다. ⌘C / Ctrl+C로 복사하세요.",tRest:"복원 완료: 도감 {d}, 마스터 칭호 {m}",tBad:"코드가 올바르지 않은 것 같습니다. 전부 복사했는지 확인하세요.",
+  viewBy:"보기",viewRoute:"루트 순서",viewNum:"도감 번호순",stopN:"{n}번 지점",locLeft:" · {n}명 남음",locDone:" · ✓ 완료"},
  stops:[
   ["{@Route 1} · {@Route 2}","게임 시작 직후. {@Viridian City}에 가는 길에 잡으세요."],
   ["{@Route 22}","{@Viridian City} 서쪽. 지금은 육지 출현만 (수상은 나중에)."],
@@ -556,7 +567,8 @@ ko:{ lv:"Lv.{n}", route:ROUTE("번도로","",1), dash:"~", dir:{North:" (북쪽)
   pillShow:"展示 CP {cp}",opt:"非必要",warn:"請先捕捉一隻",statOpt:" · 非必要 +{n}",
   footer:"出現地點參照 {thonky} 與 {pc} 核對。大師訓練家資料來自 {bulba}、{sc} 與 {gg}。粉絲製作的非官方工具，與任天堂、Game Freak 及寶可夢公司無關。",
   save:"存檔代碼",codeT:"複製到你的記事本App",copy:"複製",load:"讀取",loadPh:"貼上已儲存的代碼（LGPE1-…）",loadA:"已儲存的代碼",restore:"還原",
-  tCopied:"已複製代碼，請貼到記事本中。",tSel:"已選取，請按 ⌘C / Ctrl+C 複製。",tRest:"已還原：圖鑑 {d}、大師稱號 {m}",tBad:"這個代碼似乎不正確，請確認是否完整複製。"},
+  tCopied:"已複製代碼，請貼到記事本中。",tSel:"已選取，請按 ⌘C / Ctrl+C 複製。",tRest:"已還原：圖鑑 {d}、大師稱號 {m}",tBad:"這個代碼似乎不正確，請確認是否完整複製。",
+  viewBy:"顯示",viewRoute:"路線順序",viewNum:"圖鑑編號",stopN:"第{n}站",locLeft:" · 剩餘{n}",locDone:" · ✓ 完成"},
  stops:[
   ["{@Route 1}・{@Route 2}","遊戲剛開始。在前往{@Viridian City}的路上捕捉。"],
   ["{@Route 22}","{@Viridian City}西邊。目前只有陸地上的出現（水上之後再來）。"],
@@ -626,7 +638,8 @@ ko:{ lv:"Lv.{n}", route:ROUTE("번도로","",1), dash:"~", dir:{North:" (북쪽)
   pillShow:"展示 CP {cp}",opt:"非必要",warn:"请先捕捉一只",statOpt:" · 非必要 +{n}",
   footer:"出现地点参照 {thonky} 与 {pc} 核对。大师训练家资料来自 {bulba}、{sc} 与 {gg}。粉丝制作的非官方工具，与任天堂、Game Freak 及宝可梦公司无关。",
   save:"存档代码",codeT:"复制到你的备忘录App",copy:"复制",load:"读取",loadPh:"粘贴已保存的代码（LGPE1-…）",loadA:"已保存的代码",restore:"还原",
-  tCopied:"已复制代码，请粘贴到备忘录中。",tSel:"已选中，请按 ⌘C / Ctrl+C 复制。",tRest:"已还原：图鉴 {d}、大师称号 {m}",tBad:"这个代码似乎不正确，请确认是否完整复制。"},
+  tCopied:"已复制代码，请粘贴到备忘录中。",tSel:"已选中，请按 ⌘C / Ctrl+C 复制。",tRest:"已还原：图鉴 {d}、大师称号 {m}",tBad:"这个代码似乎不正确，请确认是否完整复制。",
+  viewBy:"显示",viewRoute:"路线顺序",viewNum:"图鉴编号",stopN:"第{n}站",locLeft:" · 剩余{n}",locDone:" · ✓ 完成"},
  stops:[
   ["{@Route 1}・{@Route 2}","游戏刚开始。在前往{@Viridian City}的路上捕捉。"],
   ["{@Route 22}","{@Viridian City}西边。目前只有陆地上的出现（水上之后再来）。"],
@@ -769,25 +782,36 @@ function tagHTML(g){
   if(state.ver && ((g==="P"&&state.ver===2)||(g==="E"&&state.ver===1))) return `<span class="tag T">${esc(t("trade"+g))}</span>`;
   return `<span class="tag ${g}">${esc(t("tag"+g))}</span>`;
 }
-function renderStops(){
-  const open = new Set([...document.querySelectorAll(".stop[open]")].map(d=>d.dataset.i));
-  const first = !document.querySelector(".stop");
-  $("#stops").innerHTML = STOPS.map((s,i)=>{
-    const m=s.title.match(/^(\d+)\.\s*(.*)$/), tr=LANG!=="en"&&T().stops[i];
-    const title=tr?fill(tr[0]):m[2], tip=tr?fill(tr[1]):s.tip;
-    return `<details class="stop" data-i="${i}" ${first||open.has(String(i))?"open":""}>
-      <summary><span class="num">${m[1]}</span><h2>${esc(title)}</h2><span class="count"></span><span class="chev">›</span></summary>
-      ${tip?`<p class="tip">${esc(tip)}</p>`:""}
-      <div class="rows">
-        <div class="head"><span></span><span>${esc(t("colDex"))}</span><span>${esc(t("colMon"))}</span><span>${esc(t("colHow"))}</span><span>${esc(t("colEvo"))}</span></div>
-        ${s.mons.map(p=>{ const name=nm(p.n), how=tHow(p.how);
-          return `<div class="row" data-n="${p.n}" data-q="${esc(norm([p.name,name,p.how,how,s.title,title].join(" ")))}">
+function stopTitle(i){
+  const m=STOPS[i].title.match(/^(\d+)\.\s*(.*)$/), tr=LANG!=="en"&&T().stops[i];
+  return {num:m[1], title:tr?fill(tr[0]):m[2], tip:tr?fill(tr[1]):STOPS[i].tip};
+}
+function rowHTML(p,i,withStop){
+  const s=STOPS[i], st=stopTitle(i), name=nm(p.n), how=tHow(p.how);
+  return `<div class="row" data-n="${p.n}" data-q="${esc(norm([p.name,name,p.how,how,s.title,st.title].join(" ")))}">
           <span class="cbw"><input type="checkbox" class="cb" data-dex="${p.n}" aria-label="${esc(name)}"></span>
           <span class="dex">#${String(p.n).padStart(3,"0")}</span>
           <span class="main"><span class="nm">${esc(name)}${tagHTML(p.tag)}</span>
-          <span class="how">${esc(how)}</span>
+          <span class="how">${esc(how)}${withStop?`<span class="tag T" title="${esc(st.title)}">${esc(t("stopN",{n:st.num}))}</span>`:""}</span>
           <span class="evo">${evoHTML(esc(tEvo(p.evo)))}</span></span>
-        </div>`}).join("")}
+        </div>`;
+}
+const headHTML=()=>`<div class="head"><span></span><span>${esc(t("colDex"))}</span><span>${esc(t("colMon"))}</span><span>${esc(t("colHow"))}</span><span>${esc(t("colEvo"))}</span></div>`;
+function renderStops(){
+  if($("#dview").value==="num"){
+    $("#stops").innerHTML=`<div class="stop"><div class="rows">${headHTML()}${ORDER.map(n=>rowHTML(MONS[n],MSTOP[n],true)).join("")}</div></div>`;
+    return;
+  }
+  const open = new Set([...document.querySelectorAll(".stop[open]")].map(d=>d.dataset.i));
+  const first = !document.querySelector("details.stop");
+  $("#stops").innerHTML = STOPS.map((s,i)=>{
+    const st=stopTitle(i);
+    return `<details class="stop" data-i="${i}" ${first||open.has(String(i))?"open":""}>
+      <summary><span class="num">${st.num}</span><h2>${esc(st.title)}</h2><span class="count"></span><span class="chev">›</span></summary>
+      ${st.tip?`<p class="tip">${esc(st.tip)}</p>`:""}
+      <div class="rows">
+        ${headHTML()}
+        ${s.mons.map(p=>rowHTML(p,i,false)).join("")}
       </div></details>`;
   }).join("");
 }
@@ -797,16 +821,16 @@ function renderMasters(){
   const sort=$("#msort").value;
   const coll=new Intl.Collator(LANG);
   const list=[...MASTERS].sort((a,b)=> sort==="loc" ? coll.compare(L(a.loc),L(b.loc))||IDX.get(a.n)-IDX.get(b.n) : IDX.get(a.n)-IDX.get(b.n));
-  const battle=list.filter(m=>!m.cp), show=list.filter(m=>m.cp);
+  const groups = sort==="loc" ? [list] : [list.filter(m=>!m.cp), list.filter(m=>m.cp)];
   let html="", lastLoc=null;
-  [battle,show].forEach((group,gi)=>{
-  html+= gi===0
+  groups.forEach((group,gi)=>{
+  if(sort!=="loc") html+= gi===0
     ? `<div class="sec-h">${esc(t("secBattle"))}</div>`
     : `<div class="sec-h">${esc(t("secShow"))}<span class="sec-p">${esc(t("secShowP"))}</span></div>`;
   lastLoc=null;
   group.forEach(m=>{
     const loc=L(m.loc), name=nm(m.n);
-    if(sort==="loc" && loc!==lastLoc){ html+=`<div class="loc-h">${esc(loc)}</div>`; lastLoc=loc; }
+    if(sort==="loc" && loc!==lastLoc){ html+=`<div class="loc-h">${esc(loc)}<span class="loc-left"></span></div>`; lastLoc=loc; }
     html+=`<label class="mcard" data-m="${m.n}" data-q="${esc(norm([NAME[m.n],name,m.loc,loc].join(" ")))}">
       <input type="checkbox" class="cb" data-mas="${m.n}">
       <span><span class="t">${esc(name)}</span>${m.cp?`<span class="pill">${esc(t("pillShow",{cp:m.cp.toLocaleString(LANG)}))}</span>`:""}${m.opt?`<span class="pill opt">${esc(t("opt"))}</span>`:""}
@@ -828,11 +852,16 @@ function sync(){
     const p=findMon(+r.dataset.n);
     r.classList.toggle("offver", !!(state.ver && p.tag && ((p.tag==="P"&&state.ver===2)||(p.tag==="E"&&state.ver===1))));
   });
-  let stopsDone=0;
-  document.querySelectorAll(".stop").forEach(d=>{
+  const stopsDone=STOPS.filter(s=>s.mons.every(m=>state.dex.has(m.n))).length;
+  document.querySelectorAll(".stop[data-i]").forEach(d=>{
     const s=STOPS[+d.dataset.i], got=s.mons.filter(m=>state.dex.has(m.n)).length;
     d.querySelector(".count").textContent=`${got} / ${s.mons.length}`;
-    const done=got===s.mons.length; d.classList.toggle("done",done); if(done) stopsDone++;
+    d.classList.toggle("done",got===s.mons.length);
+  });
+  document.querySelectorAll(".loc-h").forEach(h=>{
+    let el=h.nextElementSibling, left=0;
+    while(el&&el.matches(".mcard")){ if(!state.mas.has(+el.dataset.m)) left++; el=el.nextElementSibling; }
+    h.querySelector(".loc-left").textContent = left ? t("locLeft",{n:left}) : t("locDone");
   });
   const req=[...state.mas].filter(n=>n<=150).length;
   $("#sDex").innerHTML=`${state.dex.size} <small>/ 153</small>`; $("#bDex").style.width=state.dex.size/153*100+"%";
@@ -848,6 +877,7 @@ function sync(){
 }
 const MONS={}; STOPS.forEach(s=>s.mons.forEach(m=>MONS[m.n]=m));
 const findMon=n=>MONS[n];
+const MSTOP={}; STOPS.forEach((s,i)=>s.mons.forEach(m=>MSTOP[m.n]=i));
 
 function applyFilter(){
   const q=norm($("#q").value.trim()), hide=$("#hide").checked;
@@ -887,6 +917,7 @@ document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
 $("#q").oninput=applyFilter; $("#hide").onchange=applyFilter;
 $("#ver").onchange=e=>{state.ver=+e.target.value; renderStops(); sync();};
 $("#msort").onchange=()=>{renderMasters(); sync();};
+$("#dview").onchange=()=>{renderStops(); sync();};
 $("#copy").onclick=async()=>{
   const code=encode();
   try{ await navigator.clipboard.writeText(code); toast(t("tCopied")); }
