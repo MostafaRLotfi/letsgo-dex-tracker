@@ -1,5 +1,7 @@
 # Let's Go Dex Tracker
 
+> **Deprecated:** this tracker has moved to **[Pokédex Tracker](https://mostafarlotfi.github.io/pokedex-tracker/)**, a more complete version that will cover more games ([repo](https://github.com/MostafaRLotfi/pokedex-tracker)). Your progress carries over: open the new [Let's Go page](https://mostafarlotfi.github.io/pokedex-tracker/letsgo/) in the same browser, or paste your save code into **Load**. This page stays online but won't get updates.
+
 A free, single-page tracker for **Pokémon: Let's Go, Pikachu! / Let's Go, Eevee!**
 
 **▶ Use it here:** https://mostafarlotfi.github.io/letsgo-dex-tracker/
